@@ -2,4 +2,4 @@ node_modules/
 .env
 dist/
 build/
-customer-service/firestore-key.json
+firestore-key.json
