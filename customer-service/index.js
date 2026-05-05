@@ -74,7 +74,8 @@ app.post('/login', async (req, res) => {
         res.status(200).json({ 
             message: 'Login successful',
             token: sessionToken,
-            email: email
+            email: email,
+            name: userDoc.firstName
         });
 
     } catch (error) {

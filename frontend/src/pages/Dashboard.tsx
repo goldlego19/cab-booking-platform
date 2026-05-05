@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// Pre-defined coordinates for testing
 const LOCATIONS = {
-  'Berlin Kreuzberg': { lat: '52.50', lng: '13.43' },
-  'Berlin Friedrichshagen': { lat: '52.47', lng: '13.63' },
-  'Valletta, Malta': { lat: '35.8997', lng: '14.5148' },
-  'Mdina, Malta': { lat: '35.8858', lng: '14.4031' }
+  'Valletta (Capital)': { lat: '35.8989', lng: '14.5146' },
+  'Luqa (Malta International Airport)': { lat: '35.8575', lng: '14.4775' },
+  'St. Julian\'s': { lat: '35.9184', lng: '14.4881' },
+  'Sliema': { lat: '35.9122', lng: '14.5042' },
+  'Mdina': { lat: '35.8858', lng: '14.4031' },
+  'Żebbuġ': { lat: '35.8719', lng: '14.4411' },
+  'Birkirkara': { lat: '35.8972', lng: '14.4611' },
+  'Mosta': { lat: '35.9097', lng: '14.4256' },
+  'Mellieħa': { lat: '35.9564', lng: '14.3622' },
+  'Rabat': { lat: '35.8815', lng: '14.3987' }
 };
 
 const Dashboard = () => {

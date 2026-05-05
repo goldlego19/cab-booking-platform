@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type JSX } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Inbox from './pages/Inbox';
+import Home from './pages/Home';
 
+
+const Locations = () => <div className="p-8 text-center text-xl">Favourite Locations & Weather coming soon...</div>;
+const Bookings = () => <div className="p-8 text-center text-xl">Booking History Table coming soon...</div>;
 // A simple Navbar component so users can navigate
 const Navigation = () => {
+  const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('token');
   const userEmail = localStorage.getItem('userEmail');
+  const userName = localStorage.getItem('userName') || 'TRAVELLER';
   const [messageCount, setMessageCount] = useState(0);
 
   useEffect(() => {
@@ -37,46 +43,87 @@ const Navigation = () => {
   };
 }, [isLoggedIn, userEmail]);
 
-  
+const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    navigate('/login');
+  };
 
-  return (
-    <nav className="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
-      <h1 className="text-xl font-bold tracking-wider">Cab Platform</h1>
-      {isLoggedIn && (
-        <div className="space-x-6 flex items-center">
-          <Link to="/dashboard" className="hover:text-blue-200 font-medium transition-all">
-            Book a Cab
-          </Link>
-          
-          <Link to="/inbox" className="hover:text-blue-200 font-medium transition-all relative flex items-center">
-            Inbox 📩
-            {/* The Badge: Only renders if there is at least 1 message */}
-            {messageCount > 0 && (
-              <span className="absolute -top-3 -right-4 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse shadow-sm">
-                {messageCount}
-              </span>
-            )}
-          </Link>
-        </div>
-      )}
+  
+return (
+    <nav className="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-50">
+      <Link to={isLoggedIn ? "/home" : "/login"} className="text-2xl font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
+        M-CAB
+      </Link>
+      
+      <div className="flex items-center space-x-6">
+        {/* LOGGED OUT VIEW */}
+        {!isLoggedIn && (
+          <>
+            <Link to="/login" className="hover:text-blue-400 transition-colours font-medium">Log In</Link>
+            <Link to="/register" className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium transition-colours">Register</Link>
+          </>
+        )}
+
+        {/* LOGGED IN VIEW */}
+        {isLoggedIn && (
+          <>
+            <Link to="/home" className="hover:text-blue-400 transition-colours font-medium">Home</Link>
+            <Link to="/dashboard" className="hover:text-blue-400 transition-colours font-medium">Book Ride</Link>
+            <Link to="/locations" className="hover:text-blue-400 transition-colours font-medium">Favourites</Link>
+            <Link to="/bookings" className="hover:text-blue-400 transition-colours font-medium">History</Link>
+            
+            <Link to="/inbox" className="hover:text-blue-400 font-medium transition-colours relative flex items-center">
+              Inbox 📩
+              {messageCount > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse shadow-sm">
+                  {messageCount}
+                </span>
+              )}
+            </Link>
+            
+            <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 transition-colours font-medium ml-4 border-l border-gray-700 pl-4">
+              Log Out
+            </button>
+          </>
+        )}
+      </div>
     </nav>
   );
 };
 
-
 function App() {
+  // A wrapper component to protect routes
+  const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+    const isAuthenticated = !!localStorage.getItem('token');
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
+  };
+
+  // A wrapper to redirect logged-in users away from auth pages
+  const AuthRoute = ({ children }: { children: JSX.Element }) => {
+    const isAuthenticated = !!localStorage.getItem('token');
+    return isAuthenticated ? <Navigate to="/home" replace /> : children;
+  };
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
         <Navigation />
-
-        <main className="container mx-auto p-4">
+        <main>
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/inbox" element={<Inbox />} />
+            
+            {/* Auth Routes */}
+            <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+            <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
+            
+            {/* Protected Routes */}
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
+            <Route path="/locations" element={<ProtectedRoute><Locations /></ProtectedRoute>} />
+            <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

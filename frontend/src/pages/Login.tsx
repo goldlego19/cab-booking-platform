@@ -18,11 +18,13 @@ const Login = () => {
       const response = await axios.post('http://localhost:4001/login', formData);
       
       // Save the token and email to localStorage so the app remembers who is logged in
+      console.log('Login successful, received:', response.data);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('userEmail', formData.email);
+      localStorage.setItem('userName', response.data.name); // Save the user's name for a more personalized experience
       
       // Redirect to the booking dashboard
-      navigate('/dashboard');
+      navigate('/home');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid credentials. Please try again.');
     } finally {
