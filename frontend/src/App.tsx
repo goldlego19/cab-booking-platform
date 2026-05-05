@@ -6,16 +6,15 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Inbox from './pages/Inbox';
 import Home from './pages/Home';
+import Locations from './pages/Location';
+import Bookings from './pages/Bookings';
 
 
-const Locations = () => <div className="p-8 text-center text-xl">Favourite Locations & Weather coming soon...</div>;
-const Bookings = () => <div className="p-8 text-center text-xl">Booking History Table coming soon...</div>;
 // A simple Navbar component so users can navigate
 const Navigation = () => {
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('token');
   const userEmail = localStorage.getItem('userEmail');
-  const userName = localStorage.getItem('userName') || 'TRAVELLER';
   const [messageCount, setMessageCount] = useState(0);
 
   useEffect(() => {

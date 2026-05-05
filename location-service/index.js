@@ -89,5 +89,25 @@ app.get('/weather', async (req, res) => {
     }
 });
 
+// 5. Get all supported Maltese cities with precise coordinates
+app.get('/cities', (req, res) => {
+    // You could eventually move this to a Firestore collection!
+    // For now, serving it from the API ensures the frontend is dynamic.
+    const malteseCities = {
+        "Il-Belt Valletta": { lat: "35.8989", lng: "14.5146" },
+        "Ħal Luqa (Airport)": { lat: "35.8575", lng: "14.4775" },
+        "San Ġiljan": { lat: "35.9184", lng: "14.4881" },
+        "Tas-Sliema": { lat: "35.9122", lng: "14.5042" },
+        "L-Imdina": { lat: "35.8858", lng: "14.4031" },
+        "Ħaż-Żebbuġ": { lat: "35.8719", lng: "14.4411" },
+        "Birkirkara": { lat: "35.8972", lng: "14.4611" },
+        "Il-Mosta": { lat: "35.9097", lng: "14.4256" },
+        "Il-Mellieħa": { lat: "35.9564", lng: "14.3622" },
+        "Ir-Rabat": { lat: "35.8815", lng: "14.3987" }
+    };
+    
+    res.json(malteseCities);
+});
+
 const PORT = process.env.PORT || 4004;
 app.listen(PORT, () => console.log(`Location Service running on http://localhost:${PORT}`));

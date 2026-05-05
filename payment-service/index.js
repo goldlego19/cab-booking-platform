@@ -75,6 +75,8 @@ app.post('/pay', async (req, res) => {
 
         const finalTotal = totalBeforeDiscount - discountAmount;
 
+        const maskedCard = cardNumber ? `**** **** **** ${cardNumber.slice(-4)}` : 'Unknown Card';
+
         // Step F: Audit Trail - Save transaction to Firestore
         const paymentRef = await db.collection('payments').add({
             userId,
@@ -88,6 +90,7 @@ app.post('/pay', async (req, res) => {
             discountApplied: discountAmount,
             finalTotal: parseFloat(finalTotal.toFixed(2)),
             status: 'Completed',
+            paymentMethod: maskedCard, // <--- ADDED THIS
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
 
@@ -95,6 +98,7 @@ app.post('/pay', async (req, res) => {
         res.status(201).json({
             message: 'Payment processed successfully',
             transactionId: paymentRef.id,
+            paymentMethod: maskedCard, // <--- ADDED THIS
             finalTotal: parseFloat(finalTotal.toFixed(2)),
             breakdown: {
                 baseFare,
