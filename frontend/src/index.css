@@ -1,19 +1,16 @@
 @import "tailwindcss";
 
-/* Animated Gradient Background */
-@keyframes gradient-xy {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-gradient-xy {
-  background-size: 400% 400%;
-  animation: gradient-xy 15s ease infinite;
+@theme {
+  /* 1. Define the animation utility */
+  --animate-gradient-xy: gradient-xy 15s ease infinite;
+  
+  /* 2. Define the keyframes */
+  --keyframes-gradient-xy: {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  };
 }
