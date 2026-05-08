@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // <-- Added useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 
@@ -12,13 +12,16 @@ interface Booking {
   pricePaid?: number;
   transactionId?: string;
   status?: string;
+  paymentMethod?: string;
+  originName?: string;      
+  destinationName?: string; 
   origin?: { lat: string; lng: string; };
   destination?: { lat: string; lng: string; };
 }
 
 const Bookings = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // <-- This captures the hidden payload from the Dashboard
+  const location = useLocation();
   const userEmail = localStorage.getItem('userEmail');
   
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -43,14 +46,11 @@ const Bookings = () => {
         
         setBookings(sortedBookings);
 
-        // --- NEW: AUTO-OPEN LOGIC ---
-        // If we arrived here from the Dashboard redirect, find that specific booking and open it!
+        // Auto-open logic for Dashboard redirects
         if (location.state?.openBookingId) {
           const targetBooking = sortedBookings.find((b: Booking) => b.id === location.state.openBookingId);
           if (targetBooking) {
             setSelectedBooking(targetBooking);
-            
-            // Clean up the browser history so if they hit "Refresh", it doesn't get stuck on this page
             window.history.replaceState({}, document.title);
           }
         }
@@ -194,7 +194,6 @@ const Bookings = () => {
             </motion.div>
           ) : 
 
-          /* VIEW 2: THE DETAILS PAGE */
           (
             <motion.div 
               key="details-view"
@@ -215,7 +214,7 @@ const Bookings = () => {
                 <div className="flex justify-between items-start border-b border-white/10 pb-6 mb-6">
                   <div>
                     <h2 className="text-3xl font-extrabold tracking-tight mb-2">Journey Details</h2>
-                    <p className="font-mono text-sm text-gray-400">Booking Ref: {selectedBooking.id}</p>
+                    <p className="font-mono text-sm text-gray-400">Ref: {selectedBooking.id}</p>
                     {selectedBooking.transactionId && (
                        <p className="font-mono text-xs text-gray-500 mt-1">Transaction: {selectedBooking.transactionId}</p>
                     )}
@@ -224,9 +223,27 @@ const Bookings = () => {
                     <div className="text-3xl font-black text-green-400">
                       {selectedBooking.pricePaid ? `€${selectedBooking.pricePaid.toFixed(2)}` : 'Paid'}
                     </div>
-                    <span className="text-xs bg-green-500/20 text-green-200 border border-green-400/30 px-2 py-1 rounded mt-2 inline-block">
-                      {selectedBooking.status || 'Confirmed'}
-                    </span>
+                    <div className="text-xs text-gray-400 mt-1 font-mono tracking-widest">
+                      {selectedBooking.paymentMethod || location.state?.paymentMethod || 'Card Payment'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1.5 w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"></div>
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pickup</h4>
+                      <p className="text-lg font-bold">{selectedBooking.originName || 'Malta Pickup'}</p>
+                    </div>
+                  </div>
+                  <div className="ml-1.5 h-8 border-l-2 border-dashed border-white/20"></div>
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1.5 w-3 h-3 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]"></div>
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Destination</h4>
+                      <p className="text-lg font-bold">{selectedBooking.destinationName || 'Malta Drop-off'}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -253,16 +270,16 @@ const Bookings = () => {
                 </div>
 
                 <div className="bg-blue-900/30 p-6 rounded-2xl border border-blue-400/20 relative overflow-hidden">
-                  <h4 className="text-blue-200 text-sm font-semibold uppercase tracking-wider mb-4">GPS Routing Data</h4>
+                  <h4 className="text-blue-200 text-sm font-semibold uppercase tracking-wider mb-4">Booking Metadata</h4>
                   <div className="space-y-4 font-mono text-sm text-gray-300">
                     <div className="flex justify-between items-center">
-                      <span>Departure LAT/LNG:</span>
+                      <span>ORIGIN GPS:</span>
                       <span className="bg-black/40 px-3 py-1 rounded">
                         {selectedBooking.origin?.lat || 'N/A'}, {selectedBooking.origin?.lng || 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span>Arrival LAT/LNG:</span>
+                      <span>DESTINATION GPS:</span>
                       <span className="bg-black/40 px-3 py-1 rounded">
                         {selectedBooking.destination?.lat || 'N/A'}, {selectedBooking.destination?.lng || 'N/A'}
                       </span>

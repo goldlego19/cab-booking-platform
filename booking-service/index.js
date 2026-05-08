@@ -21,38 +21,63 @@ app.use(cors());
 app.post('/bookings', async (req, res) => {
     try {
         const bookingData = req.body; 
-        // bookingData now contains { ..., cardNumber } from the frontend
 
         console.log('[Booking MS] Requesting payment calculation...');
         
-        // Pass the entire bookingData (including cardNumber) to Payment MS
+        // Step A: Call Payment MS
         const paymentResponse = await axios.post(`${process.env.PAYMENT_SERVICE_URL}/pay`, bookingData);
         
         const { transactionId, finalTotal, breakdown, paymentMethod } = paymentResponse.data;
 
-        // Save the booking to Firestore with the NEW paymentMethod field
+        // Step B: Save to Firestore
         const bookingRef = await db.collection('bookings').add({
             email: bookingData.email,
+            originName: bookingData.originName,
+            destinationName: bookingData.destinationName,
             origin: { lat: bookingData.dep_lat, lng: bookingData.dep_lng },
             destination: { lat: bookingData.arr_lat, lng: bookingData.arr_lng },
             cabType: bookingData.cabType,
             passengers: bookingData.passengers,
             pickupTime: bookingData.pickupTime,
             transactionId: transactionId,
-            paymentMethod: paymentMethod, // This is the masked string from Payment MS
+            paymentMethod: paymentMethod, // The masked string from Payment MS
             pricePaid: finalTotal,
             status: 'Confirmed',
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
 
-        // ... rest of your event bus and response logic
+        console.log(`[Booking MS] Booking saved: ${bookingRef.id}`);
+
+        // Step C: Fire the 'BookingCreated' event to the Event Bus (Restored!)
+        try {
+            await axios.post(`${process.env.EVENT_BUS_URL}/events`, {
+                type: 'BookingCreated',
+                data: {
+                    userEmail: bookingData.email,
+                    bookingId: bookingRef.id,
+                    message: `Your ${bookingData.cabType} cab is confirmed for ${finalTotal} Euros.`
+                }
+            });
+            console.log('[Booking MS] Event dispatched to Event Bus');
+        } catch (eventError) {
+            console.error('[Booking MS] Warning: Failed to reach Event Bus', eventError.message);
+            // We don't fail the booking if the event bus is temporarily down
+        }
+
+        // Step D: Return success to the Frontend (THIS IS WHAT WAS MISSING!)
+        res.status(201).json({
+            message: 'Booking confirmed successfully',
+            bookingId: bookingRef.id,
+            pricePaid: finalTotal,
+            receipt: breakdown
+        });
+
     } catch (error) {
         console.error('[Booking MS] Error:', error.message);
         res.status(500).json({ error: 'Failed to process booking' });
     }
 });
 
-// 2. View Past & Current Bookings
 app.get('/bookings/:email', async (req, res) => {
     try {
         const snapshot = await db.collection('bookings')
@@ -68,7 +93,6 @@ app.get('/bookings/:email', async (req, res) => {
     }
 });
 
-// 3. Listen for internal events (if needed later)
 app.post('/events', (req, res) => {
     console.log(`[Booking MS] Event Received: ${req.body.type}`);
     res.send({ status: 'OK' });

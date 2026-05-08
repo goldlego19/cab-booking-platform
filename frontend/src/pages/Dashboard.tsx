@@ -10,6 +10,7 @@ const Dashboard = () => {
   // Dynamic Cities & Loyalty State
   const [availableCities, setAvailableCities] = useState<Record<string, { lat: string, lng: string }>>({});
   const [isDiscountEligible, setIsDiscountEligible] = useState(false);
+  const [ridesRemaining, setRidesRemaining] = useState(3); // <--- NEW: Track remaining rides
   
   // Form State
   const [formData, setFormData] = useState({
@@ -18,7 +19,7 @@ const Dashboard = () => {
     cabType: 'Standard',
     passengers: 1,
     pickupTime: '',
-    applyDiscount: false // We will now control this programmatically!
+    applyDiscount: false 
   });
 
   // UI State
@@ -62,11 +63,14 @@ const Dashboard = () => {
         const bookingsRes = await axios.get(`http://localhost:4002/bookings/${email}`);
         const pastBookingsCount = bookingsRes.data.length;
         
-        // If they have exactly 3, 6, 9 etc. completed rides, the NEXT ride gets the discount!
+        // Check if eligible
         let hasDiscount = false;
         if (pastBookingsCount > 0 && pastBookingsCount % 3 === 0) {
           hasDiscount = true;
           setIsDiscountEligible(true);
+        } else {
+          // NEW: Calculate exactly how many rides are left!
+          setRidesRemaining(3 - (pastBookingsCount % 3));
         }
 
         // Set the form data once everything is loaded
@@ -74,7 +78,7 @@ const Dashboard = () => {
           ...prev,
           origin: defaultOrigin,
           destination: defaultDest,
-          applyDiscount: hasDiscount // Automatically lock it in!
+          applyDiscount: hasDiscount 
         }));
 
       } catch (err) {
@@ -88,12 +92,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (receipt && receipt.bookingId) {
       const timer = setTimeout(() => {
-        // We pass the bookingId inside the "state" object.
-        // This is a hidden payload that React Router sends to the next page!
         navigate('/bookings', { state: { openBookingId: receipt.bookingId } });
       }, 3000);
       
-      // Cleanup the timer if the user navigates away manually before 3 seconds
       return () => clearTimeout(timer);
     }
   }, [receipt, navigate]);
@@ -156,8 +157,6 @@ const Dashboard = () => {
       const passM = formData.passengers > 4 ? 2 : 1;
       
       const subtotal = base * cabM * timeM * passM;
-      
-      // Because we locked in formData.applyDiscount on load, this calculation is safe!
       const discountAmount = formData.applyDiscount ? subtotal * 0.25 : 0;
       
       setEstimate({
@@ -184,6 +183,8 @@ const Dashboard = () => {
     const bookingPayload = {
       userId: userEmail,
       email: userEmail,
+      originName: formData.origin,
+      destinationName: formData.destination,
       dep_lat: availableCities[formData.origin].lat,
       dep_lng: availableCities[formData.origin].lng,
       arr_lat: availableCities[formData.destination].lat,
@@ -191,7 +192,7 @@ const Dashboard = () => {
       cabType: formData.cabType,
       passengers: Number(formData.passengers),
       pickupTime: new Date(formData.pickupTime).toISOString(),
-      applyDiscount: formData.applyDiscount, // Safely passing the locked-in boolean
+      applyDiscount: formData.applyDiscount, 
       cardNumber: cardDetails.number
     };
 
@@ -201,9 +202,9 @@ const Dashboard = () => {
       setEstimate(null);
       setCardDetails({ number: '', expiry: '', cvc: '', name: '' });
       
-      // Reset the loyalty status instantly so they can't book twice with it!
       setIsDiscountEligible(false);
       setFormData(prev => ({ ...prev, applyDiscount: false }));
+      setRidesRemaining(3); // Reset the tracker for the next cycle
 
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to process booking.');
@@ -288,7 +289,7 @@ const Dashboard = () => {
             </div>
 
             <div className="mt-6">
-              {/* AUTOMATIC LOYALTY BANNER */}
+              {/* DYNAMIC LOYALTY BANNER */}
               {isDiscountEligible ? (
                 <div className="mb-4 p-4 bg-purple-500/20 rounded-xl border border-purple-400/50 flex items-center gap-3 animate-pulse shadow-[0_0_15px_rgba(168,85,247,0.3)]">
                   <span className="text-2xl">🎁</span>
@@ -299,7 +300,8 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="mb-4 p-4 bg-white/5 rounded-xl border border-white/10 text-center text-sm text-gray-400">
-                  Complete 3 rides to unlock a 25% discount.
+                  {/* NEW: DYNAMIC COUNTDOWN TEXT */}
+                  {ridesRemaining} ride{ridesRemaining === 1 ? '' : 's'} remaining for 25% Discount
                 </div>
               )}
 

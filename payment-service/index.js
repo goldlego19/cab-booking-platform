@@ -26,9 +26,7 @@ function getCabMultiplier(cabType) {
 function getDaytimeMultiplier(isoDateString) {
     const date = new Date(isoDateString);
     const hour = date.getHours();
-    // Between 12:00 AM (0) and 8:00 AM (8): 1.2
     if (hour >= 0 && hour < 8) return 1.2;
-    // Between 8:00 AM and 11:59 PM: 1
     return 1;
 }
 
@@ -43,7 +41,11 @@ function getPassengersMultiplier(passengers) {
 // 1. Process Payment / Calculate Final Fare
 app.post('/pay', async (req, res) => {
     try {
-        const { userId, email, dep_lat, dep_lng, arr_lat, arr_lng, cabType, pickupTime, passengers, applyDiscount } = req.body;
+        // THE FIX IS HERE: Added cardNumber to the end of this line!
+        const { userId, email, dep_lat, dep_lng, arr_lat, arr_lng, cabType, pickupTime, passengers, applyDiscount, cardNumber } = req.body;
+
+        // Create a masked version of the card safely
+        const maskedCard = cardNumber ? `**** **** **** ${cardNumber.slice(-4)}` : '**** **** **** 0000';
 
         // Step A: Validate Passenger Count
         let passengersMultiplier;
@@ -75,8 +77,6 @@ app.post('/pay', async (req, res) => {
 
         const finalTotal = totalBeforeDiscount - discountAmount;
 
-        const maskedCard = cardNumber ? `**** **** **** ${cardNumber.slice(-4)}` : 'Unknown Card';
-
         // Step F: Audit Trail - Save transaction to Firestore
         const paymentRef = await db.collection('payments').add({
             userId,
@@ -90,7 +90,7 @@ app.post('/pay', async (req, res) => {
             discountApplied: discountAmount,
             finalTotal: parseFloat(finalTotal.toFixed(2)),
             status: 'Completed',
-            paymentMethod: maskedCard, // <--- ADDED THIS
+            paymentMethod: maskedCard, // <--- Saving the masked card to Firestore
             timestamp: admin.firestore.FieldValue.serverTimestamp()
         });
 
@@ -98,7 +98,7 @@ app.post('/pay', async (req, res) => {
         res.status(201).json({
             message: 'Payment processed successfully',
             transactionId: paymentRef.id,
-            paymentMethod: maskedCard, // <--- ADDED THIS
+            paymentMethod: maskedCard, // <--- Sending the masked card back to Booking MS
             finalTotal: parseFloat(finalTotal.toFixed(2)),
             breakdown: {
                 baseFare,
@@ -126,7 +126,7 @@ app.get('/payments/:email', async (req, res) => {
 
 const PORT = process.env.PORT || 4003;
 
-// Listen for internal events (silences Event Bus warnings)
+// Listen for internal events
 app.post('/events', (req, res) => {
     res.send({ status: 'OK' });
 });

@@ -145,7 +145,6 @@ const Locations = () => {
     exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
   };
 
-  // Helper to ensure RapidAPI icon URLs work perfectly
   const getIconUrl = (url?: string) => {
     if (!url) return "";
     return url.startsWith("http") ? url : `https:${url}`;

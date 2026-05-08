@@ -9,7 +9,6 @@ app.use(cors());
 
 // --- ROUTES ---
 
-// 1. Get Fare Estimate
 app.get('/estimate', async (req, res) => {
     const { dep_lat, dep_lng, arr_lat, arr_lng } = req.query;
 
@@ -40,7 +39,6 @@ app.get('/estimate', async (req, res) => {
             basePriceInEuros = dayFareData.price_in_cents / 100;
         }
 
-        // Return strictly what the Payment MS needs
         res.json({
             distance: journey.distance,
             duration: journey.duration,
