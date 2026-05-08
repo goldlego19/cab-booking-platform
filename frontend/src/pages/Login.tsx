@@ -16,7 +16,7 @@ const Login = () => {
 
     try {
       // Calling your Customer Microservice
-      const response = await axios.post('http://localhost:4001/login', formData);
+      const response = await axios.post('http://localhost:4000/login', formData);
       
       // Save the token and email to localStorage so the app remembers who is logged in
       console.log('Login successful, received:', response.data);

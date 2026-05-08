@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm run start-event\" \"npm run start-customer\" \"npm run start-location\" \"npm run start-fare\" \"npm run start-payment\" \"npm run start-booking\" \"npm run start-frontend\"",
+    "start": "concurrently \"npm run start-event\" \"npm run start-customer\" \"npm run start-location\" \"npm run start-fare\" \"npm run start-payment\" \"npm run start-booking\" \"npm run start-gateway\" \"npm run start-frontend\"",
     "start-event": "cd event-bus && npx nodemon index.js",
     "start-customer": "cd customer-service && npx nodemon index.js",
     "start-location": "cd location-service && npx nodemon index.js",
     "start-fare": "cd fare-estimation-service && npx nodemon index.js",
     "start-payment": "cd payment-service && npx nodemon index.js",
     "start-booking": "cd booking-service && npx nodemon index.js",
+    "start-gateway": "cd gateway-api && npx nodemon index.js",
     "start-frontend": "cd frontend && npm run dev"
   },
   "keywords": [],

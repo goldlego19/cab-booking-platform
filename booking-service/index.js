@@ -15,21 +15,17 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- ROUTES ---
 
-// 1. Create a New Booking
 app.post('/bookings', async (req, res) => {
     try {
         const bookingData = req.body; 
 
         console.log('[Booking MS] Requesting payment calculation...');
         
-        // Step A: Call Payment MS
         const paymentResponse = await axios.post(`${process.env.PAYMENT_SERVICE_URL}/pay`, bookingData);
         
         const { transactionId, finalTotal, breakdown, paymentMethod } = paymentResponse.data;
 
-        // Step B: Save to Firestore
         const bookingRef = await db.collection('bookings').add({
             email: bookingData.email,
             originName: bookingData.originName,
@@ -40,7 +36,7 @@ app.post('/bookings', async (req, res) => {
             passengers: bookingData.passengers,
             pickupTime: bookingData.pickupTime,
             transactionId: transactionId,
-            paymentMethod: paymentMethod, // The masked string from Payment MS
+            paymentMethod: paymentMethod,
             pricePaid: finalTotal,
             status: 'Confirmed',
             createdAt: admin.firestore.FieldValue.serverTimestamp()
@@ -48,7 +44,6 @@ app.post('/bookings', async (req, res) => {
 
         console.log(`[Booking MS] Booking saved: ${bookingRef.id}`);
 
-        // Step C: Fire the 'BookingCreated' event to the Event Bus (Restored!)
         try {
             await axios.post(`${process.env.EVENT_BUS_URL}/events`, {
                 type: 'BookingCreated',
@@ -61,10 +56,9 @@ app.post('/bookings', async (req, res) => {
             console.log('[Booking MS] Event dispatched to Event Bus');
         } catch (eventError) {
             console.error('[Booking MS] Warning: Failed to reach Event Bus', eventError.message);
-            // We don't fail the booking if the event bus is temporarily down
+           
         }
 
-        // Step D: Return success to the Frontend (THIS IS WHAT WAS MISSING!)
         res.status(201).json({
             message: 'Booking confirmed successfully',
             bookingId: bookingRef.id,

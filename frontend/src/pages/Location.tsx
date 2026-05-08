@@ -34,7 +34,7 @@ const Locations = () => {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await axios.get('http://localhost:4004/cities');
+        const response = await axios.get('http://localhost:4000/cities');
         setAvailableCities(response.data);
         
         // Set the first city as the default dropdown option
@@ -56,7 +56,7 @@ const Locations = () => {
     setIsLoading(true);
     try {
       // Hit your GET /locations/:email endpoint
-      const locRes = await axios.get(`http://localhost:4004/locations/${userEmail}`);
+      const locRes = await axios.get(`http://localhost:4000/locations/${userEmail}`);
       const locations: SavedLocation[] = locRes.data;
       setSavedLocations(locations);
 
@@ -65,7 +65,7 @@ const Locations = () => {
       for (const loc of locations) {
         try {
           // Send the exact GPS coordinates instead of the Maltese text
-          const weatherRes = await axios.get(`http://localhost:4004/weather`, {
+          const weatherRes = await axios.get(`http://localhost:4000/weather`, {
             params: { q: `${loc.latitude},${loc.longitude}` },
           });
           newWeather[loc.address] = {
@@ -103,7 +103,7 @@ const Locations = () => {
 
     try {
       // Hit your POST /locations endpoint
-      await axios.post("http://localhost:4004/locations", {
+      await axios.post("http://localhost:4000/locations", {
         email: userEmail,
         address: selectedAddress,
         latitude: coords.lat,
@@ -120,7 +120,7 @@ const Locations = () => {
   const removeFavourite = async (id: string) => {
     try {
       // Hit your DELETE /locations/:id endpoint
-      await axios.delete(`http://localhost:4004/locations/${id}`);
+      await axios.delete(`http://localhost:4000/locations/${id}`);
       // Instantly update UI without waiting for a re-fetch
       setSavedLocations((prev) => prev.filter((loc) => loc.id !== id));
     } catch (error) {

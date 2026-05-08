@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 require('dotenv').config();
 
-// Initialize Firestore using your downloaded JSON key
 const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -16,9 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- ROUTES ---
 
-// 1. Register a new user
 app.post('/register', async (req, res) => {
     try {
         const { firstName, surname, email, password } = req.body;
