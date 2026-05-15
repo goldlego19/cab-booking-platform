@@ -16,7 +16,7 @@ const Login = () => {
 
     try {
       // Calling your Customer Microservice
-      const response = await axios.post('http://localhost:4000/login', formData);
+      const response = await axios.post('https://gateway-api-88100526402.europe-west1.run.app/login', formData);
       
       // Save the token and email to localStorage so the app remembers who is logged in
       console.log('Login successful, received:', response.data);

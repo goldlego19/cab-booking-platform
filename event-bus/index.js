@@ -6,9 +6,9 @@ app.use(express.json());
 
 // A hardcoded list of your local microservices that need to listen to events
 const subscribers = [
-    'http://localhost:4001/events', // Customer Service
-    'http://localhost:4002/events', // Booking Service
-    'http://localhost:4003/events', // Payment Service
+    process.env.CUSTOMER_SERVICE_URL ? `${process.env.CUSTOMER_SERVICE_URL}/events` : 'http://localhost:4001/events',
+    process.env.BOOKING_SERVICE_URL ? `${process.env.BOOKING_SERVICE_URL}/events` : 'http://localhost:4002/events',
+    process.env.PAYMENT_SERVICE_URL ? `${process.env.PAYMENT_SERVICE_URL}/events` : 'http://localhost:4003/events',
 ];
 
 app.post('/events', async (req, res) => {

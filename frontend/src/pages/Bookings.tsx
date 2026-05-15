@@ -38,7 +38,7 @@ const Bookings = () => {
 
     const fetchBookings = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/bookings/${userEmail}`);
+        const response = await axios.get(`https://gateway-api-88100526402.europe-west1.run.app/bookings/${userEmail}`);
         
         const sortedBookings = response.data.sort((a: Booking, b: Booking) => 
           new Date(b.pickupTime).getTime() - new Date(a.pickupTime).getTime()

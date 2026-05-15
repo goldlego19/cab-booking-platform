@@ -38,19 +38,19 @@ const forwardRequest = async (req, res, targetBaseUrl) => {
 // --- ROUTING RULES ---
 
 app.use(['/login', '/register', '/inbox'], (req, res) => {
-    forwardRequest(req, res, 'http://localhost:4001');
+    forwardRequest(req, res, 'https://customer-service-88100526402.europe-west1.run.app');
 });
 
 app.use('/bookings', (req, res) => {
-    forwardRequest(req, res, 'http://localhost:4002');
+    forwardRequest(req, res, 'https://booking-service-88100526402.europe-west1.run.app');
 });
 
 app.use('/estimate', (req, res) => {
-    forwardRequest(req, res, 'http://localhost:4005');
+    forwardRequest(req, res, 'https://fare-estimation-service-88100526402.europe-west1.run.app');
 });
 
 app.use(['/locations', '/cities', '/weather'], (req, res) => {
-    forwardRequest(req, res, 'http://localhost:4004');
+    forwardRequest(req, res, 'https://location-service-88100526402.europe-west1.run.app');
 });
 
 app.use((req, res) => {
@@ -59,5 +59,5 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log(`API Gateway is running on http://localhost:${PORT}`);
+    console.log(`API Gateway is running on ${PORT}`);
 });

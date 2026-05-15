@@ -21,7 +21,7 @@ const Register = () => {
 
     try {
       // Calling your Customer Microservice
-      await axios.post('http://localhost:4000/register', formData);
+      await axios.post('https://gateway-api-88100526402.europe-west1.run.app/register', formData);
       
       // If successful, send them to the login page
       navigate('/login');

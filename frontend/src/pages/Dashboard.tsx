@@ -47,7 +47,7 @@ const Dashboard = () => {
     const loadDashboardData = async () => {
       try {
         // 1. Fetch Dynamic Cities
-        const citiesRes = await axios.get('http://localhost:4000/cities');
+        const citiesRes = await axios.get('https://gateway-api-88100526402.europe-west1.run.app/cities');
         setAvailableCities(citiesRes.data);
         
         const cityNames = Object.keys(citiesRes.data);
@@ -60,7 +60,7 @@ const Dashboard = () => {
         }
 
         // 2. Automatically Check Loyalty Status from Booking MS
-        const bookingsRes = await axios.get(`http://localhost:4000/bookings/${email}`);
+        const bookingsRes = await axios.get(`https://gateway-api-88100526402.europe-west1.run.app/bookings/${email}`);
         const pastBookingsCount = bookingsRes.data.length;
         
         // Check if eligible
@@ -141,7 +141,7 @@ const Dashboard = () => {
       const depCoords = availableCities[formData.origin];
       const arrCoords = availableCities[formData.destination];
 
-      const fareRes = await axios.get('http://localhost:4000/estimate', {
+      const fareRes = await axios.get('https://gateway-api-88100526402.europe-west1.run.app/estimate', {
         params: {
           dep_lat: depCoords.lat,
           dep_lng: depCoords.lng,
@@ -197,14 +197,14 @@ const Dashboard = () => {
     };
 
     try {
-      const response = await axios.post('http://localhost:4000/bookings', bookingPayload);
+      const response = await axios.post('https://gateway-api-88100526402.europe-west1.run.app/bookings', bookingPayload);
       setReceipt(response.data);
       setEstimate(null);
       setCardDetails({ number: '', expiry: '', cvc: '', name: '' });
       
       setIsDiscountEligible(false);
       setFormData(prev => ({ ...prev, applyDiscount: false }));
-      setRidesRemaining(3); // Reset the tracker for the next cycle
+      setRidesRemaining(3);
 
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to process booking.');

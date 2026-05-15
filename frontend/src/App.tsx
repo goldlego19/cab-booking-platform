@@ -22,7 +22,7 @@ const Navigation = () => {
 
   const checkInbox = async () => {
     try {
-      const response = await axios.get(`http://localhost:4001/inbox/${userEmail}`);
+      const response = await axios.get(`https://gateway-api-88100526402.europe-west1.run.app/inbox/${userEmail}`);
       const unreadCount = response.data.filter((m: any) => m.read === false).length;
       setMessageCount(unreadCount);
     } catch (err) { /* ... */ }

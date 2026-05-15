@@ -20,7 +20,7 @@ const Inbox = () => {
 
   const fetchMessages = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/inbox/${userEmail}`);
+      const response = await axios.get(`https://gateway-api-88100526402.europe-west1.run.app/inbox/${userEmail}`);
       setMessages(response.data);
     } catch (err) {
       setError('Failed to load messages.');
@@ -44,7 +44,7 @@ const Inbox = () => {
   useEffect(() => {
     const markAsRead = async () => {
       try {
-        await axios.put(`http://localhost:4000/inbox/read/${userEmail}`);
+        await axios.put(`https://gateway-api-88100526402.europe-west1.run.app/inbox/read/${userEmail}`);
         
         // 2. Alert the Navigation component to clear the badge immediately
         window.dispatchEvent(new Event("messagesUpdated"));

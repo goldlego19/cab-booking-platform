@@ -5,9 +5,15 @@ const admin = require('firebase-admin');
 require('dotenv').config();
 
 // Initialise Firestore
-const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 if (!admin.apps.length) {
-    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+        console.log("Started locally with JSON key");
+    } else {
+        admin.initializeApp(); 
+        console.log("Started in Google Cloud using Default Credentials");
+    }
 }
 const db = admin.firestore();
 

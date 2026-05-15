@@ -5,10 +5,16 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 require('dotenv').config();
 
-const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+if (!admin.apps.length) {
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+        admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+        console.log("Started locally with JSON key");
+    } else {
+        admin.initializeApp(); 
+        console.log("Started in Google Cloud using Default Credentials");
+    }
+}
 const db = admin.firestore();
 
 const app = express();
@@ -64,8 +70,6 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // THE CRITICAL PIECE: We must respond to the frontend!
-        // (Using a simple token here, replace with jsonwebtoken if you prefer)
         const sessionToken = `token_${Date.now()}`; 
 
         res.status(200).json({ 
@@ -89,9 +93,8 @@ app.post('/events', async (req, res) => {
     if (type === 'BookingCreated') {
         const { userEmail, bookingId } = data;
 
-        // --- Action 1: The 3-Minute "Cab Ready" Timer ---
-        // We use setTimeout to wait exactly 3 minutes (180,000 milliseconds) before firing.
-        // TIP: Change the 180000 to 10000 (10 seconds) while testing!
+        //Action 1: The 3-Minute "Cab Ready" Timer
+        //Change the 180000 to 10000 (10 seconds) while testing!
         setTimeout(async () => {
             try {
                 await db.collection('inbox').add({
@@ -105,9 +108,9 @@ app.post('/events', async (req, res) => {
             } catch (error) {
                 console.error(`[Customer Service] Error saving CabReady:`, error);
             }
-        }, 180000); // 3 minutes
+        }, 10000); // 10 seconds
 
-        // --- Action 2: Check for Loyalty Discount ---
+        // Check for Loyalty Discount
         // Check how many bookings this user has made to see if they earn the 25% discount.
         try {
             const bookingsSnapshot = await db.collection('bookings').where('email', '==', userEmail).get();
